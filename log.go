@@ -78,3 +78,8 @@ func Error(msg string, args ...any) {
 func Warn(msg string, args ...any) {
 	_log(slog.LevelWarn, msg, args...)
 }
+
+func Fatal(msg string, args ...any) {
+	_log(slog.LevelError, msg, args...)
+	os.Exit(1)
+}
