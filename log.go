@@ -4,31 +4,20 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"runtime"
 	"strings"
 )
 
-type LogLevel string
+const (
+	EnvLogLevel  = "LOG_LEVEL"
+	EnvLogFormat = "LOG_FORMAT"
 
-func (l LogLevel) ToSlogLevel() slog.Level {
-	switch strings.ToLower(string(l)) {
-	case "info", "i":
-		return slog.LevelInfo
-	case "warn", "warning":
-		return slog.LevelWarn
-	case "error", "err":
-		return slog.LevelError
-	case "debug", "d":
-		return slog.LevelDebug
-	}
-
-	return slog.LevelDebug
-}
+	JSONFormat = "json"
+)
 
 var logger *slog.Logger
 
 func init() {
-	logger = NewLogger(LogLevel(os.Getenv("COGITO_LOG_LEVEL")), os.Getenv("LOG_FORMAT"))
+	logger = NewLogger(LogLevel(os.Getenv(EnvLogLevel)), os.Getenv(EnvLogFormat))
 }
 
 func SetLogger(l *slog.Logger) {
@@ -37,29 +26,25 @@ func SetLogger(l *slog.Logger) {
 
 func NewLogger(level LogLevel, format string) *slog.Logger {
 	var handler slog.Handler
-	switch format {
-	case "json":
-		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: level.ToSlogLevel()})
-	default:
-		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: level.ToSlogLevel()})
+
+	showCode := level.ToSlogLevel() == slog.LevelDebug
+
+	opts := &slog.HandlerOptions{
+		AddSource: showCode,
+		Level:     level.ToSlogLevel(),
 	}
+
+	switch strings.ToLower(format) {
+	case JSONFormat:
+		handler = slog.NewJSONHandler(os.Stdout, opts)
+	default:
+		handler = slog.NewTextHandler(os.Stdout, opts)
+	}
+
 	return slog.New(handler)
 }
 
 func _log(level slog.Level, msg string, args ...any) {
-	_, f, l, _ := runtime.Caller(2)
-	group := slog.Group(
-		"source",
-		slog.Attr{
-			Key:   "file",
-			Value: slog.AnyValue(f),
-		},
-		slog.Attr{
-			Key:   "L",
-			Value: slog.AnyValue(l),
-		},
-	)
-	args = append(args, group)
 	logger.Log(context.Background(), level, msg, args...)
 }
 
