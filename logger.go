@@ -20,7 +20,6 @@ func NewLogger(level LogLevel, format string) *Logger {
 	debuggingInformation := level.ToSlogLevel() == slog.LevelDebug
 
 	opts := &slog.HandlerOptions{
-		AddSource: debuggingInformation,
 		Level:     level.ToSlogLevel(),
 	}
 
