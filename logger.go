@@ -42,7 +42,7 @@ func NewLogger(level LogLevel, format string) *Logger {
 
 func (l *Logger) _log(level slog.Level, msg string, args ...any) {
 	if l.debuggingInformation {
-		_, f, line, _ := runtime.Caller(2)
+		_, f, line, _ := runtime.Caller(3)
 		group := slog.Group(
 			"caller",
 			slog.Attr{
