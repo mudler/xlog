@@ -41,5 +41,4 @@ func Warn(msg string, args ...any) {
 
 func Fatal(msg string, args ...any) {
 	logger.Fatal(msg, args...)
-	os.Exit(1)
 }
